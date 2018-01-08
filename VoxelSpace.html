@@ -131,7 +131,7 @@ var screendata =
     buf8:      null, // the same array but with bytes
     buf32:     null, // the same array but with 32-Bit words
 
-    backgroundcolor: 0xFFE09090
+    backgroundcolor: 0xFF333333
 };
 
 // ---------------------------------------------
@@ -219,7 +219,7 @@ function GetMousePosition(e)
 
 function DetectMouseDown(e)
 {
-    input.forwardbackward = 3.;
+    input.forwardbackward = 6.;
     input.mouseposition = GetMousePosition(e);
     time = new Date().getTime();
 
@@ -264,11 +264,11 @@ function DetectKeysDown(e)
         break;
     case 38:    // cursor up
     case 87:    // w
-        input.forwardbackward = 3.;
+        input.forwardbackward = 6.;
         break;
     case 40:    // cursor down
     case 83:    // s
-        input.forwardbackward = -3.;
+        input.forwardbackward = -6.;
         break;
     case 82:    // r
         input.updown = +200.;
@@ -415,7 +415,7 @@ function Render()
             ply += dy;
         }
     }
-    dz += 0.01;
+  dz += 0.01;
 }
 
 
