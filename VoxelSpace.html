@@ -374,13 +374,16 @@ function Render()
         {
             var mapoffset = ((Math.floor(ply) & mapwidthperiod) << map.shift) + (Math.floor(plx) & mapheightperiod)|0;
             var heightonscreen = (camera.height - map.altitude[mapoffset]) * invz + camera.horizon|0;
-            DrawVerticalLine(i, heightonscreen|0, hiddeny[i], map.color[mapoffset]);
-            if (heightonscreen < hiddeny[i]) hiddeny[i] = heightonscreen;
+            if (heightonscreen < hiddeny[i]) {
+              DrawVerticalLine(i, heightonscreen|0, hiddeny[i], map.color[mapoffset]);
+              hiddeny[i] = heightonscreen;
+            }
+
             plx += dx;
             ply += dy;
         }
+      //dz += 0.01;
     }
-  dz += 0.01;
 }
 
 
