@@ -79,7 +79,7 @@ var map =
     width:    2048,
     height:   2048,
     shift:    11,  // power of two: 2^10 = 1024
-    altitude: new Uint32Array(2048*2048), // 1024 * 1024 byte array with height information
+    altitude: new Uint16Array(2048*2048), // 1024 * 1024 byte array with height information
     color:    new Uint32Array(2048*2048) // 1024 * 1024 int array with RGB colors
 };
 
@@ -122,6 +122,16 @@ var time = new Date().getTime();
 var timelastframe = new Date().getTime();
 var frames = 0;
 
+function getTile(x, y) {
+    if(x < 0 || y < 0)
+        return null;
+    x = x / map.width | 0;
+    y = y / map.height | 0;
+    if(x != 0 || y != 0)
+        return null;
+    return map;
+}
+
 // Update the camera for next frame. Dependent on keypresses
 function UpdateCamera()
 {
@@ -158,7 +168,8 @@ function UpdateCamera()
     // Collision detection. Don't fly below the surface.
     var mapoffset = ((Math.floor(camera.y) & (map.width-1)) << map.shift) + (Math.floor(camera.x) & (map.height-1))|0;
     var cameraHeight = 200;
-    if ((map.altitude[mapoffset]+cameraHeight) > camera.height) camera.height = map.altitude[mapoffset] + cameraHeight;
+    var tile = getTile(camera.x, camera.y);
+    if (tile && (tile.altitude[mapoffset]+cameraHeight) > camera.height) camera.height = tile.altitude[mapoffset] + cameraHeight;
 
     time = current;
 
@@ -184,7 +195,7 @@ function GetMousePosition(e)
 
 function DetectMouseDown(e)
 {
-    input.forwardbackward = 3.;
+    input.forwardbackward = 5.;
     input.mouseposition = GetMousePosition(e);
     time = new Date().getTime();
 
@@ -372,11 +383,14 @@ function Render()
         var invz = 1. / z * 4.;
         for(var i=0; i<screenwidth|0; i=i+1|0)
         {
-            var mapoffset = ((Math.floor(ply) & mapwidthperiod) << map.shift) + (Math.floor(plx) & mapheightperiod)|0;
-            var heightonscreen = (camera.height - map.altitude[mapoffset]) * invz + camera.horizon|0;
-            if (heightonscreen < hiddeny[i]) {
-              DrawVerticalLine(i, heightonscreen|0, hiddeny[i], map.color[mapoffset]);
-              hiddeny[i] = heightonscreen;
+            var tile = getTile(plx, ply);
+            if(tile) {
+                var mapoffset = ((Math.floor(ply) & mapwidthperiod) << map.shift) + (Math.floor(plx) & mapheightperiod)|0;
+                var heightonscreen = (camera.height - tile.altitude[mapoffset]) * invz + camera.horizon|0;
+                if (heightonscreen < hiddeny[i]) {
+                  DrawVerticalLine(i, heightonscreen|0, hiddeny[i], tile.color[mapoffset]);
+                  hiddeny[i] = heightonscreen;
+                }
             }
 
             plx += dx;
@@ -440,23 +454,30 @@ function DownloadImagesAsync(urls, OnSuccess) {
     });
 }
 
-function LoadMap(filenames)
+function LoadMap(file)
 {
-   var files = filenames.split(";");
-   DownloadImagesAsync(["maps/"+files[0]+".png", "maps/"+files[1]+".png"], OnLoadedImages);
+   DownloadImagesAsync(["maps/"+file+".png"], OnLoadedImage);
 }
 
-function OnLoadedImages(result)
-{
-    var datac = result[0];
-    var datah = result[1];
-    for(var i=0; i<map.width*map.height; i++)
-    {
-        //map.color[i] = 0xFF000000 | (datac[(i<<2) + 2] << 16) | (datac[(i<<2) + 1] << 8) | datac[(i<<2) + 0];
-        map.altitude[i] = datah[(i<<2)+1]*256 + datah[(i<<2)+2];
+function imageToTile(datah) {
+    var tile = {
+        altitude: new Uint32Array(2048*2048), // 1024 * 1024 byte array with height information
+        color:    new Uint32Array(2048*2048) // 1024 * 1024 int array with RGB colors
+    };
+    for(var i=0; i<map.width*map.height; i++) {
+        tile.altitude[i] = datah[(i<<2)+1]*256 + datah[(i<<2)+2];
         var c = datah[(i<<2)];
-        map.color[i] = 0xFF000000 | c << 16 | c << 8 | c;
+        tile.color[i] = 0xFF000000 | c << 16 | c << 8 | c;
     }
+    return tile;
+}
+
+function OnLoadedImage(images)
+{
+    var datah = images[0];
+    var tile = imageToTile(datah);
+    map.altitude = tile.altitude;
+    map.color = tile.color;
     Draw();
 }
 
@@ -489,7 +510,7 @@ function Init()
         map.altitude[i] = 0;
     }
 
-    LoadMap("C1W;D1");
+    LoadMap("D1");
     OnResizeWindow();
 
     // set event handlers for keyboard, mouse, touchscreen and window resize
