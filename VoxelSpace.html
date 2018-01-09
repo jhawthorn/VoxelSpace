@@ -184,7 +184,7 @@ function GetMousePosition(e)
 
 function DetectMouseDown(e)
 {
-    input.forwardbackward = 6.;
+    input.forwardbackward = 3.;
     input.mouseposition = GetMousePosition(e);
     time = new Date().getTime();
 
@@ -229,11 +229,11 @@ function DetectKeysDown(e)
         break;
     case 38:    // cursor up
     case 87:    // w
-        input.forwardbackward = 6.;
+        input.forwardbackward = 3.;
         break;
     case 40:    // cursor down
     case 83:    // s
-        input.forwardbackward = -6.;
+        input.forwardbackward = -3.;
         break;
     case 82:    // r
         input.updown = +200.;
