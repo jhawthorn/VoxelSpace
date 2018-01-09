@@ -396,16 +396,18 @@ function Draw()
     UpdateCamera();
     DrawBackground();
     Render();
-    Flip();
-    frames++;
+    window.requestAnimationFrame(function(){
+      Flip();
+      frames++;
 
-    if (!input.keypressed)
-    {
-        updaterunning = false;
-    } else
-    {
-        window.setTimeout(Draw, 0);
-    }
+      if (!input.keypressed)
+      {
+          updaterunning = false;
+      } else
+      {
+          window.setTimeout(Draw, 0);
+      }
+    });
 }
 
 // ---------------------------------------------
