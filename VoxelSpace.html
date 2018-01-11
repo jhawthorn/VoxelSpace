@@ -79,8 +79,6 @@ var map =
     width:    2048,
     height:   2048,
     shift:    11,  // power of two: 2^10 = 1024
-    altitude: new Uint16Array(2048*2048), // 1024 * 1024 byte array with height information
-    color:    new Uint32Array(2048*2048) // 1024 * 1024 int array with RGB colors
 };
 
 var tiles = [[], []];
@@ -481,15 +479,6 @@ function imageToTile(datah) {
     return tile;
 }
 
-function OnLoadedImage(images)
-{
-    var datah = images[0];
-    var tile = imageToTile(datah);
-    map.altitude = tile.altitude;
-    map.color = tile.color;
-    Draw();
-}
-
 function OnResizeWindow()
 {
     screendata.canvas = document.getElementById('myCanvas');
@@ -513,12 +502,6 @@ function OnResizeWindow()
 
 function Init()
 {
-    for(var i=0; i<map.width*map.height; i++)
-    {
-        map.color[i] = 0xFF007050;
-        map.altitude[i] = 0;
-    }
-
     LoadMap(0, 1, "CoV_4900E_54570N");
     LoadMap(1, 1, "CoV_4910E_54570N");
     LoadMap(2, 1, "CoV_4920E_54570N");
