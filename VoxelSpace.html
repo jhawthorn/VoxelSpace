@@ -63,9 +63,9 @@
 
 var camera =
 {
-    x:        512., // x position on the map
-    y:        800., // y position on the map
-    height:    78., // height of the camera
+    x:        3370., // x position on the map
+    y:        2915., // y position on the map
+    height:   64*256., // height of the camera
     angle:      0., // direction of the camera
     horizon:  100., // horizon position (look up and down)
     distance: 800   // distance of map
@@ -82,6 +82,8 @@ var map =
     altitude: new Uint16Array(2048*2048), // 1024 * 1024 byte array with height information
     color:    new Uint32Array(2048*2048) // 1024 * 1024 int array with RGB colors
 };
+
+var tiles = [[], []];
 
 // ---------------------------------------------
 // Screen data
@@ -127,9 +129,10 @@ function getTile(x, y) {
         return null;
     x = x / map.width | 0;
     y = y / map.height | 0;
-    if(x != 0 || y != 0)
+    if(tiles[y] == null)
         return null;
-    return map;
+
+    return tiles[y][x];
 }
 
 // Update the camera for next frame. Dependent on keypresses
@@ -195,7 +198,7 @@ function GetMousePosition(e)
 
 function DetectMouseDown(e)
 {
-    input.forwardbackward = 5.;
+    input.forwardbackward = 6.;
     input.mouseposition = GetMousePosition(e);
     time = new Date().getTime();
 
@@ -454,9 +457,15 @@ function DownloadImagesAsync(urls, OnSuccess) {
     });
 }
 
-function LoadMap(file)
+function LoadMap(x, y, file)
 {
-   DownloadImagesAsync(["maps/"+file+".png"], OnLoadedImage);
+    DownloadImagesAsync(["heightmaps/"+file+".png"], function(images) {
+        console.log("loaded " + x + ", " + y)
+        if(!tiles[y])
+            tiles[y] = [];
+        tiles[y][x] = imageToTile(images[0]);
+        Draw();
+    });
 }
 
 function imageToTile(datah) {
@@ -510,7 +519,12 @@ function Init()
         map.altitude[i] = 0;
     }
 
-    LoadMap("D1");
+    LoadMap(0, 1, "CoV_4900E_54570N");
+    LoadMap(1, 1, "CoV_4910E_54570N");
+    LoadMap(2, 1, "CoV_4920E_54570N");
+    LoadMap(0, 0, "CoV_4900E_54580N");
+    LoadMap(1, 0, "CoV_4910E_54580N");
+    LoadMap(2, 0, "CoV_4920E_54580N");
     OnResizeWindow();
 
     // set event handlers for keyboard, mouse, touchscreen and window resize
@@ -527,6 +541,7 @@ function Init()
     window.setInterval(function(){
         var current = new Date().getTime();
         document.getElementById('fps').innerText = (frames / (current-timelastframe) * 1000).toFixed(1) + " fps";
+        //document.getElementById('fps').innerText = (frames / (current-timelastframe) * 1000).toFixed(1) + " fps " + camera.x + ", " + camera.y;
         frames = 0;
         timelastframe = current;
     }, 2000);
