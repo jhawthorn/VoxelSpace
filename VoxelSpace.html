@@ -432,24 +432,29 @@ function Draw()
 function DownloadImagesAsync(urls, OnSuccess) {
     var pending = urls.length;
     var result = [];
+    OnSuccess = OnSuccess.bind(null, result);
     if (pending === 0) {
-        setTimeout(OnSuccess.bind(null, result), 0);
+        setTimeout(OnSuccess, 0);
         return;
     }
+    var onLoad = function(image, i) {
+        var tempcanvas = document.createElement("canvas");
+        var tempcontext = tempcanvas.getContext("2d");
+        tempcanvas.width = map.width;
+        tempcanvas.height = map.height;
+        tempcontext.drawImage(image, 0, 0, map.width, map.height);
+        result[i] = tempcontext.getImageData(0, 0, map.width, map.height).data;
+        pending--;
+        if (pending === 0) {
+            setTimeout(OnSuccess, 0);
+        }
+    }
+
     urls.forEach(function(url, i) {
         var image = new Image();
         //image.addEventListener("load", function() {
         image.onload = function() {
-            var tempcanvas = document.createElement("canvas");
-            var tempcontext = tempcanvas.getContext("2d");
-            tempcanvas.width = map.width;
-            tempcanvas.height = map.height;
-            tempcontext.drawImage(image, 0, 0, map.width, map.height);
-            result[i] = tempcontext.getImageData(0, 0, map.width, map.height).data;
-            pending--;
-            if (pending === 0) {
-                OnSuccess(result);
-            }
+            setTimeout(function() { onLoad(image, i) }, 0);
         };
         image.src = url;
     });
@@ -468,7 +473,7 @@ function LoadMap(x, y, file)
 
 function imageToTile(datah) {
     var tile = {
-        altitude: new Uint32Array(2048*2048), // 1024 * 1024 byte array with height information
+        altitude: new Uint16Array(2048*2048), // 1024 * 1024 byte array with height information
         color:    new Uint32Array(2048*2048) // 1024 * 1024 int array with RGB colors
     };
     for(var i=0; i<map.width*map.height; i++) {
