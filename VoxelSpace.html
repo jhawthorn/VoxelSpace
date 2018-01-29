@@ -177,7 +177,10 @@ function FetchNear() {
 
         var e = 4830 + x*10;
         var n = 54620 - y*10;
-        LoadMap(x, y, "CoV_" + e + "E_" + n + "N");
+        LoadMap(x, y, "CoV_" + e + "E_" + n + "N", function() {
+          var idx = loading.indexOf(str);
+          loading.splice(idx, 1);
+        });
       }
     }
   }
@@ -508,16 +511,22 @@ function DownloadImagesAsync(urls, OnSuccess) {
             setTimeout(function() { onLoad(image, i) }, 0);
         };
         image.src = url;
+        image.crossOrigin = "Anonymous";
     });
 }
 
-function LoadMap(x, y, file)
+var tile_basepath = "http://vancouver-heightmaps.s3.amazonaws.com/heightmaps/"
+
+function LoadMap(x, y, file, callback)
 {
-    DownloadImagesAsync(["heightmaps/"+file+".png"], function(images) {
+    DownloadImagesAsync([tile_basepath + file + ".png"], function(images) {
         console.log("loaded " + x + ", " + y)
         if(!tiles[y])
             tiles[y] = [];
         tiles[y][x] = imageToTile(images[0]);
+        if(callback) {
+          callback();
+        }
         Draw();
     });
 }
@@ -558,12 +567,6 @@ function OnResizeWindow()
 
 function Init()
 {
-    //LoadMap(0, 1, "CoV_4900E_54570N");
-    //LoadMap(1, 1, "CoV_4910E_54570N");
-    //LoadMap(2, 1, "CoV_4920E_54570N");
-    //LoadMap(0, 0, "CoV_4900E_54580N");
-    //LoadMap(1, 0, "CoV_4910E_54580N");
-    //LoadMap(2, 0, "CoV_4920E_54580N");
     OnResizeWindow();
 
     // set event handlers for keyboard, mouse, touchscreen and window resize
