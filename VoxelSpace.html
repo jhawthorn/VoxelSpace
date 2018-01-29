@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Voxel Space project demonstration</title>
+    <title>Vancouver Lidar Voxel Space</title>
     <meta charset="UTF-8">
-    <meta name="description" content="Demonstration of the Voxel Space technique">
-    <meta name="author" content="Sebastian Macke">
-    <meta name="keywords" content="Voxel, VoxelSpace, Voxel Space, Comanche, landscape, rendering">
+    <meta name="description" content="Vancouver Lidar 3d Voxel Space">
+    <meta name="author" content="John Hawthorn and Sebastian Macke">
+    <meta name="keywords" content="Vancouver, Voxel, VoxelSpace, Voxel Space, Comanche, landscape, rendering">
     <style>
         html, body {margin: 0; height: 100%; overflow: hidden}
         canvas { width: 100%; height: 100%; }
@@ -47,7 +47,7 @@
 
 <label for="distancerange">Distance</label>
 <input id="distancerange" type="range" min="100" max="2000" step="1" onchange="camera.distance = this.value">
-
+<a href="https://github.com/jhawthorn/VoxelSpace">Project Information</a>
 </div>
 
 <canvas id="myCanvas" width="800" height="400">
@@ -63,8 +63,8 @@
 
 var camera =
 {
-    x:        3370., // x position on the map
-    y:        2915., // y position on the map
+    x:        17713., // x position on the map
+    y:        11046., // y position on the map
     height:   64*256., // height of the camera
     angle:      0., // direction of the camera
     horizon:  100., // horizon position (look up and down)
@@ -81,7 +81,7 @@ var map =
     shift:    11,  // power of two: 2^10 = 1024
 };
 
-var tiles = [[], []];
+var tiles = [];
 
 // ---------------------------------------------
 // Screen data
@@ -127,10 +127,37 @@ function getTile(x, y) {
         return null;
     x = x / map.width | 0;
     y = y / map.height | 0;
-    if(tiles[y] == null)
+    if(tiles[y] === undefined)
         return null;
 
     return tiles[y][x];
+}
+
+var loading = [];
+
+function FetchNear() {
+  var lowx = (camera.x - camera.distance) / map.width | 0;
+  var lowy = (camera.y - camera.distance) / map.height | 0;
+  var highx = (camera.x + camera.distance) / map.width | 0;
+  var highy = (camera.y + camera.distance) / map.height | 0;
+
+  for(var y = lowy; y <= highy; y++) {
+    for(var x = lowx; x <= highx; x++) {
+      console.log([y,x])
+      if(tiles[y] && tiles[y][x]) {
+        continue;
+      }
+      var str = "" + y + "," + x;
+      if(loading.indexOf(str) < 0) {
+        loading.push(str);
+        console.log("loading tile " + str);
+
+        var e = 4830 + x*10;
+        var n = 54620 - y*10;
+        LoadMap(x, y, "CoV_" + e + "E_" + n + "N");
+      }
+    }
+  }
 }
 
 // Update the camera for next frame. Dependent on keypresses
@@ -409,6 +436,7 @@ function Draw()
 {
     updaterunning = true;
     UpdateCamera();
+    FetchNear();
     DrawBackground();
     Render();
     window.requestAnimationFrame(function(){
@@ -507,12 +535,12 @@ function OnResizeWindow()
 
 function Init()
 {
-    LoadMap(0, 1, "CoV_4900E_54570N");
-    LoadMap(1, 1, "CoV_4910E_54570N");
-    LoadMap(2, 1, "CoV_4920E_54570N");
-    LoadMap(0, 0, "CoV_4900E_54580N");
-    LoadMap(1, 0, "CoV_4910E_54580N");
-    LoadMap(2, 0, "CoV_4920E_54580N");
+    //LoadMap(0, 1, "CoV_4900E_54570N");
+    //LoadMap(1, 1, "CoV_4910E_54570N");
+    //LoadMap(2, 1, "CoV_4920E_54570N");
+    //LoadMap(0, 0, "CoV_4900E_54580N");
+    //LoadMap(1, 0, "CoV_4910E_54580N");
+    //LoadMap(2, 0, "CoV_4920E_54580N");
     OnResizeWindow();
 
     // set event handlers for keyboard, mouse, touchscreen and window resize
@@ -529,7 +557,7 @@ function Init()
     window.setInterval(function(){
         var current = new Date().getTime();
         document.getElementById('fps').innerText = (frames / (current-timelastframe) * 1000).toFixed(1) + " fps";
-        //document.getElementById('fps').innerText = (frames / (current-timelastframe) * 1000).toFixed(1) + " fps " + camera.x + ", " + camera.y;
+        document.getElementById('fps').innerText = (frames / (current-timelastframe) * 1000).toFixed(1) + " fps " + camera.x + ", " + camera.y;
         frames = 0;
         timelastframe = current;
     }, 2000);
