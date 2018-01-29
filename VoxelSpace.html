@@ -581,7 +581,7 @@ function Init()
     window.setInterval(function(){
         var current = new Date().getTime();
         document.getElementById('fps').innerText = (frames / (current-timelastframe) * 1000).toFixed(1) + " fps";
-        document.getElementById('fps').innerText = (frames / (current-timelastframe) * 1000).toFixed(1) + " fps " + camera.x + ", " + camera.y;
+        //document.getElementById('fps').innerText = (frames / (current-timelastframe) * 1000).toFixed(1) + " fps " + camera.x + ", " + camera.y;
         frames = 0;
         timelastframe = current;
     }, 2000);
