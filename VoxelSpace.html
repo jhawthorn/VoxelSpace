@@ -133,9 +133,34 @@ function getTile(x, y) {
     return tiles[y][x];
 }
 
+function ClearFar() {
+  var lowx = (camera.x - camera.distance * 2) / map.width | 0;
+  var lowy = (camera.y - camera.distance * 2) / map.height | 0;
+  var highx = (camera.x + camera.distance * 2) / map.width | 0;
+  var highy = (camera.y + camera.distance * 2) / map.height | 0;
+
+  for(var y = 0; y < lowy; y++)
+    delete tiles[y];
+
+  for(var y = highy+1; y < tiles.length; y++)
+    delete tiles[y];
+
+  for(var y = lowy; y <= highy; y++) {
+    if(tiles[y] === undefined)
+      continue;
+
+    for(var x = 0; x < lowx; x++)
+      delete tiles[y][x];
+    for(var x = highx+1; x < tiles[y].length; x++)
+      delete tiles[y][x];
+  }
+}
+
 var loading = [];
 
 function FetchNear() {
+  ClearFar();
+
   var lowx = (camera.x - camera.distance) / map.width | 0;
   var lowy = (camera.y - camera.distance) / map.height | 0;
   var highx = (camera.x + camera.distance) / map.width | 0;
@@ -143,7 +168,6 @@ function FetchNear() {
 
   for(var y = lowy; y <= highy; y++) {
     for(var x = lowx; x <= highx; x++) {
-      console.log([y,x])
       if(tiles[y] && tiles[y][x]) {
         continue;
       }
