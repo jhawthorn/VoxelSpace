@@ -159,7 +159,6 @@ function ClearFar() {
 var loading = [];
 
 function FetchNear() {
-  ClearFar();
 
   var lowx = (camera.x - camera.distance) / map.width | 0;
   var lowy = (camera.y - camera.distance) / map.height | 0;
@@ -584,6 +583,8 @@ function Init()
         //document.getElementById('fps').innerText = (frames / (current-timelastframe) * 1000).toFixed(1) + " fps " + camera.x + ", " + camera.y;
         frames = 0;
         timelastframe = current;
+
+      ClearFar();
     }, 2000);
 
 }
