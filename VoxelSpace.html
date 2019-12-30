@@ -177,7 +177,7 @@ function FetchNear() {
 
         var e = 4830 + x*10;
         var n = 54620 - y*10;
-        LoadMap(x, y, "CoV_" + e + "E_" + n + "N", function() {
+        LoadMap(x, y, "" + e + "E_" + n + "N", function() {
           var idx = loading.indexOf(str);
           loading.splice(idx, 1);
         });
@@ -515,7 +515,7 @@ function DownloadImagesAsync(urls, OnSuccess) {
     });
 }
 
-var tile_basepath = "http://vancouver-heightmaps.s3.amazonaws.com/heightmaps/"
+var tile_basepath = "https://vancouver-heightmaps.s3.amazonaws.com/heightmaps-2018/"
 
 function LoadMap(x, y, file, callback)
 {
